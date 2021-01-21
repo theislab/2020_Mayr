@@ -1,0 +1,125 @@
+	sex [m/f]	smoking status [active/ex/never smokers]	age [years]	entity	disease type [ILD/non ILD]
+GA_04	f	ex	70	IPF/UIP	ILD
+GA_05	m	ex	81	ILD	ILD
+GA_06	m	ex	74	Sarcoidosis	ILD
+GA_07	m	ex	70	IPF/UIP	ILD
+GA_10	m	ex	64	lung cancer	non ILD
+GA_102	m	never	40	Sarcoidosis	ILD
+GA_103	m	active	67	IPF/UIP	ILD
+GA_104	f	never	71	NSIP	ILD
+GA_105	f	active	30	RBILD	ILD
+GA_107	m	ex	64	COP	ILD
+GA_109	f	ex	65	COP	ILD
+GA_111	f	ex	56	IPF/UIP	ILD
+GA_112	f	active	46	NSIP	ILD
+GA_113	f	never	75	NSIP	ILD
+GA_115	m	ex	66	IPF/UIP	ILD
+GA_119	f	never	77	EAA	ILD
+GA_12	m	ex	66	EAA	ILD
+GA_122	f	ex	73	COP	ILD
+GA_123	f	never	56	Asthma	non ILD
+GA_125	m	ex	79	ILD	ILD
+GA_128	f	ex	58	Sarcoidosis	ILD
+GA_13	m	ex	73	COPD	non ILD
+GA_133	f	NaN	73	COP	ILD
+GA_134	f	NaN	53	ILD	ILD
+GA_14	f	NaN	NaN	ILD	ILD
+GA_146	m	NaN	77	lung cancer	non ILD
+GA_148	m	NaN	23	Sarcoidosis	ILD
+GA_15	f	ex	62	COP	ILD
+GA_150	f	NaN	68	EAA	ILD
+GA_153	m	NaN	68	IPF/UIP	ILD
+GA_157	m	ex	73	ILD	ILD
+GA_16	f	active	43	Sarcoidosis	ILD
+GA_166	f	NaN	79	lung cancer	non ILD
+GA_167	m	NaN	76	lung cancer	non ILD
+GA_169	f	NaN	48	ILD	ILD
+GA_17	m	active	32	Sarcoidosis	ILD
+GA_172	m	never	74	IPF/UIP	ILD
+GA_174	m	NaN	78	lung cancer	non ILD
+GA_175	m	ex	47	lung cancer	non ILD
+GA_176	m	ex	48	ILD	ILD
+GA_179	f	NaN	75	ILD	ILD
+GA_18	f	ex	58	NSIP	ILD
+GA_185	f	never	83	COP	ILD
+GA_187	f	ex	81	COP	ILD
+GA_19	m	ex	82	EAA	ILD
+GA_190	m	ex	77	IPF/UIP	ILD
+GA_193	m	NaN	37	Bronchitis	non ILD
+GA_20	m	ex	58	ILD	ILD
+GA_207	f	ex	64	ABPA	non ILD
+GA_208	f	never	77	ILD	ILD
+GA_21	f	ex	57	NSIP	ILD
+GA_211	f	ex	77	COPD	non ILD
+GA_212	f	ex	73	ILD	ILD
+GA_213	m	ex	32	Sarcoidosis	ILD
+GA_214	f	ex	67	lung cancer	non ILD
+GA_216	m	active	52	ILD	ILD
+GA_218	m	ex	53	Sarcoidosis	ILD
+GA_22	m	NaN	57	COPD	non ILD
+GA_220	m	active	29	Sarcoidosis	ILD
+GA_221	f	never	50	EAA	ILD
+GA_222	m	never	45	EAA	ILD
+GA_223	m	active	24	Bronchitis	non ILD
+GA_224	m	ex	74	Sarcoidosis	ILD
+GA_228	m	never	38	Sarcoidosis	ILD
+GA_229	f	never	77	lung cancer	non ILD
+GA_23	m	ex	NaN	IPF/UIP	ILD
+GA_230	m	never	54	Sarcoidosis	ILD
+GA_231	f	never	55	Sarcoidosis	ILD
+GA_233	f	ex	55	ILD	ILD
+GA_234	f	never	67	ILD	ILD
+GA_235	f	never	59	Sarcoidosis	ILD
+GA_237	m	ex	71	NSIP	ILD
+GA_24	m	active	60	COPD	non ILD
+GA_242	m	active	67	COPD	non ILD
+GA_243	m	never	30	Sarcoidosis	ILD
+GA_247	f	never	59	NSIP	ILD
+GA_249	f	never	50	Asthma	non ILD
+GA_25	m	ex	67	IPF/UIP	ILD
+GA_250	f	never	34	lung cancer	non ILD
+GA_256	m	never	59	Asthma	non ILD
+GA_258	m	never	49	Sarcoidosis	ILD
+GA_259	m	never	73	ILD	ILD
+GA_26	f	ex	62	COP	ILD
+GA_263	m	ex	63	Sarcoidosis	ILD
+GA_264	f	never	52	ILD	ILD
+GA_267	m	ex	83	ILD	ILD
+GA_268	f	active	50	Asthma	non ILD
+GA_269	f	never	65	NSIP	ILD
+GA_27	f	NaN	NaN	ILD	ILD
+GA_273	f	ex	76	IPF/UIP	ILD
+GA_274	m	never	51	post LuTX	non ILD
+GA_275	m	active	41	EAA	ILD
+GA_276	m	never	72	IPF/UIP	ILD
+GA_277	f	never	44	Sarcoidosis	ILD
+GA_29	m	active	45	IPF/UIP	ILD
+GA_30	f	active	58	ILD	ILD
+GA_31	f	ex	48	ILD	ILD
+GA_44	f	active	51	COPD	non ILD
+GA_46	m	active	49	RBILD	ILD
+GA_48	m	NaN	55	COP	ILD
+GA_50	f	never	52	lung cancer	non ILD
+GA_51	m	ex	77	ILD	ILD
+GA_53	m	ex	45	ILD	ILD
+GA_56	m	NaN	74	IPF/UIP	ILD
+GA_57	m	ex	64	Sarcoidosis	ILD
+GA_58	m	ex	78	ILD	ILD
+GA_60	m	active	49	RBILD	ILD
+GA_70	m	ex	68	COPD	non ILD
+GA_72	m	never	51	COP	ILD
+GA_73	f	NaN	61	lung cancer	non ILD
+GA_74	m	ex	66	NSIP	ILD
+GA_76	m	NaN	NaN	COPD	non ILD
+GA_77	f	active	74	COPD	non ILD
+GA_78	m	never	71	ILD	ILD
+GA_79	m	never	52	Sarcoidosis	ILD
+GA_80	f	never	71	Cough	non ILD
+GA_81	f	ex	64	IPF/UIP	ILD
+GA_82	m	never	68	COP	ILD
+GA_83	m	never	67	NSIP	ILD
+GA_84	m	ex	74	IPF/UIP	ILD
+GA_85	m	active	25	Sarcoidosis	ILD
+GA_89	m	NaN	NaN	EAA	ILD
+GA_90	f	never	50	Sarcoidosis	ILD
+GA_93	f	ex	62	ILD	ILD

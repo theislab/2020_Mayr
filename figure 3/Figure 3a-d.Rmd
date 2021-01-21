@@ -1,0 +1,264 @@
+title: "Generate cell type frequency barplots v2"
+author: "Lukas Simon"
+
+Figure 3a-d
+---
+
+Load R packages
+```{r}
+library(reticulate)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+```
+
+Load scanpy object in python and extract obs table
+```{}
+repl_python()
+import scanpy as sc
+adata = sc.read('integrated_human_dataset.h5ad')
+obs = adata.obs
+exit
+```
+
+Calculate cell type frequencies
+```{r}
+metadata <- py$obs
+asplit <- split(1:nrow(metadata), metadata$patient_id)
+celltypes <- unique(metadata$cell_type)
+tmp <- do.call(cbind, lapply(asplit, function(x) table(metadata$cell_type[x])[celltypes]))
+rownames(tmp) <- celltypes
+tmp[which(is.na(tmp))] <- 0
+tmp <- t(t(tmp) / colSums(tmp))
+freqs <- tmp
+study <- rep('Reyfman', ncol(freqs))
+study[grep('GSM', colnames(freqs))] <- 'Banovich'
+study[grep('muc', colnames(freqs))] <- 'Schiller'
+treat <- metadata$health_status[match(colnames(freqs), metadata$patient_id)]
+age <- metadata$Age[match(colnames(freqs), metadata$patient_id)]
+gender <- metadata$Sex[match(colnames(freqs), metadata$patient_id)]
+```
+
+Generate boxplots
+```{r}
+tmp <- data.frame(t(freqs), study, treat)
+aframe <- melt(tmp, measure.vars = setdiff(colnames(tmp), c('study', 'treat')))
+old_labels <- unique(paste(aframe$treat, aframe$variable, sep = '.'))
+new_labels <- do.call(c, lapply(as.character(unique(aframe$variable)), function(x) c(x, '')))
+p_schiller <- ggplot(aframe[which(aframe$study == 'Schiller'),], aes(x = interaction(treat, variable), value, color = treat)) +
+    geom_boxplot(outlier.shape = NA) + geom_point(alpha = 0.5, size = 1) +
+    theme_bw() + coord_flip() +
+    scale_x_discrete(breaks = old_labels, labels = new_labels) +
+    ylab('Frequency') + xlab('Cell type') + ggtitle('Schiller') +
+  theme(legend.position = "none")
+  
+p_banovich <- ggplot(aframe[which(aframe$study == 'Banovich'),], aes(x = interaction(treat, variable), value, color = treat)) +
+    geom_boxplot(outlier.shape = NA) + geom_point(alpha = 0.5, size = 1) +
+    theme_bw() + coord_flip() +
+    scale_x_discrete(breaks = old_labels, labels = new_labels) +
+    ylab('Frequency') + xlab('Cell type') + ggtitle('Banovich') +
+  theme(legend.position = "none")
+p_reyfman <- ggplot(aframe[which(aframe$study == 'Reyfman'),], aes(x = interaction(treat, variable), value, color = treat)) +
+    geom_boxplot(outlier.shape = NA) + geom_point(alpha = 0.5, size = 1) +
+    theme_bw() + coord_flip() +
+    scale_x_discrete(breaks = old_labels, labels = new_labels) +
+    ylab('Frequency') + xlab('Cell type') + ggtitle('Reyfman') +
+  theme(legend.position = "none")
+p_final <- grid.arrange(p_schiller, p_banovich, p_reyfman, ncol = 3)
+ggsave(p_final, file = 'Cell_type_frequencies.pdf', width = 16, height = 8)
+```
+
+Calculate foldchanges
+```{r}
+fcs <- unlist(lapply(split(1:nrow(aframe), aframe$variable), function(x){
+  subm <- aframe[x,]
+  ctrl <- mean(subm$value[which(subm$treat == 'control donor')])
+  ild <- mean(subm$value[which(subm$treat == 'endstage lung fibrosis')])
+  (ild + 0.001)/(ctrl + 0.001)
+}))
+```
+
+Foldchanges for cell types used in paper
+```{r}
+fcs[c('Aberrant.basaloid.cells', 'mDC1', 'Basal.cells', 'Club.cells',
+      'AM.activated', 'AT.1.cells', 'B.cells', 'AT.2.cells', 'pDC', 'Myofibroblasts')]
+```
+
+Perform PCA
+```{r}
+asplit <- split(1:ncol(freqs), study)
+aframe <- do.call(rbind, lapply(asplit, function(x){
+  prop <- sqrt(freqs[,x])
+  pca <- prcomp(t(prop))
+  umap::umap(pca$x[,1:5])
+  udata <- umap::umap(pca$x[,1:5])
+  data.frame(pca$x[,1:5],
+             udata$layout,
+             treat = treat[x], study = study[x],
+             age = age[x], gender = gender[x])
+}))
+ggplot(aframe, aes(PC1, PC2, color = treat)) +
+  facet_wrap(~ study) +
+  geom_point() + theme_bw()
+```
+
+Plot PCA based on cell type frequencies
+```{r}
+prop <- freqs
+prop <- prop[which(apply(prop, 1, var) > 0),] 
+pca <- prcomp(t(prop), scale. = T)
+aframe <- data.frame(pca$x[,1:5],
+                     treat, study, age, gender)
+ggplot(aframe, aes(PC1, PC2, color = treat)) +
+  stat_ellipse() + geom_point(data = aframe, aes(shape = study)) +
+  theme_bw() + ggtitle('PCA of cell type frequencies')
+ggsave('Cell_type_freq_PCA.pdf', width = 8, height = 6)
+ggplot(aframe, aes(treat, PC2, fill = treat)) +
+  facet_wrap(~ study) +
+  geom_boxplot() + geom_point() + theme_bw()
+ggsave('Cell_type_freq_PC2.pdf', width = 6, height = 6)
+```
+
+Run RF analysis (5 fold cross-validation)
+```{r}
+library(randomForest)
+prop <- sqrt(freqs)
+aframe <- data.frame(treat, t(prop))
+k <- 5
+asplit <- split(colnames(prop), 1:k) 
+orig <- unlist(lapply(asplit, function(x){
+  test <- x
+  training <- setdiff(colnames(prop), test)
+  #model <- lda(treat ~ ., data = aframe[training,])
+  #predictions <- predict(model, data.frame(aframe[test,]))
+  #mean(predictions$class == aframe[test, 'treat'])
+  model <- randomForest(treat~., data = aframe[training,])
+  predictions <- predict(model, data.frame(aframe[test,]))
+  mean(predictions == aframe[test, 'treat'])
+}))
+aframe <- data.frame(treat = sample(aframe$treat), t(prop))
+random <- unlist(lapply(asplit, function(x){
+  test <- x
+  training <- setdiff(colnames(prop), test)
+  #model <- lda(treat ~ ., data = aframe[training,])
+  #predictions <- predict(model, data.frame(aframe[test,]))
+  #mean(predictions$class==aframe[test, 'treat'])
+  
+  model <- randomForest(treat~., data = aframe[training,])
+  predictions <- predict(model, data.frame(aframe[test,]))
+  mean(predictions == aframe[test, 'treat'])
+}))
+aframe <- data.frame(accuracies = c(orig, random), type = c(rep('orig', k), rep('random', k)))
+ggplot(aframe, aes(type, accuracies)) + geom_boxplot() + geom_point() + theme_bw() +
+  ggtitle('5 fold cross-validation') + ylab('Accuracy') + xlab('')
+ggsave('RF_cell_type_freq_accuracies.pdf', height = 6, width = 6)
+aframe <- data.frame(treat, t(prop))
+model <- randomForest(treat~., data = aframe)
+imp <- as.numeric(model$importance)
+names(imp) <- rownames(model$importance)
+pdf('RF_cell_type_freq_imporance.pdf', height = 8, width = 6)
+par(mar = c(10, 5, 5, 5))
+barplot(tail(sort(imp), 10), las = 2, ylab = 'RF imporance')
+dev.off()
+```
+
+Run LDA analysis (leave one study out)
+```{r}
+prop <- sqrt(freqs)
+prop <- prop[which(apply(prop, 1, var) > 0),] 
+aframe <- data.frame(treat, t(prop))
+asplit <- split(colnames(prop), study) 
+orig <- unlist(lapply(asplit, function(x){
+  test <- x
+  training <- setdiff(colnames(prop), test)
+  #model <- lda(treat~., data = aframe[training,])
+  model <- randomForest(treat~., data = aframe[training,])
+  predictions <- predict(model, data.frame(aframe[test,]))
+  mean(predictions == aframe[test, 'treat'])
+}))
+aframe <- data.frame(accuracies = c(orig, random), type = c(rep('orig', k), rep('random', k)))
+ggplot(aframe, aes(type, accuracies)) + geom_boxplot() + geom_point() + theme_bw() +
+  ggtitle('5 fold cross-validation') + ylab('Accuracy') + xlab('')
+```
+
+Plot variances
+```{r}
+asplit <- split(1:ncol(freqs), paste(study, treat, sep = '|'))
+tmp <- do.call(rbind, lapply(names(asplit), function(x){
+  vars <- apply(freqs[, asplit[[x]]], 1, var)
+  means <- apply(freqs[, asplit[[x]]], 1, mean)
+  data.frame(treat = strsplit(x, '|', fixed = T)[[1]][2],
+             study = strsplit(x, '|', fixed = T)[[1]][1],
+             vars,
+             means,
+             x = names(vars))
+}))
+aframe <- tmp
+aframe$coef_var <- aframe$vars/aframe$means
+ggplot(aframe, aes(x=treat, y=coef_var, fill=treat)) +
+  facet_wrap(~ study) +
+  geom_boxplot()
+aframe$coef_var[which(aframe$treat == 'control donor')] <- aframe$coef_var[which(aframe$treat == 'control donor')] * (-1)
+ggplot(aframe, aes(x=x, y=coef_var, fill=treat)) +
+  facet_wrap(~ study) +
+  geom_bar(stat = 'identity') +
+  coord_flip() + theme_bw()
+```
+
+
+Plot variances (balanced groups)
+```{r}
+asplit <- split(1:ncol(freqs), study)
+tmp <- do.call(rbind, lapply(names(asplit), function(nom){
+  x <- asplit[[nom]]
+  study <- nom
+  asplit2 <- split(colnames(freqs)[x], treat[x])
+  n <- min(unlist(lapply(asplit2, length)))
+  do.call(rbind, lapply(names(asplit2), function(nom2){
+    y <- asplit2[[nom2]]
+    treat <- nom2
+    ok <- sample(y, n)
+    vars <- apply(freqs[, ok], 1, var)
+    means <- apply(freqs[, ok], 1, mean)
+    data.frame(treat,
+               study,
+               vars,
+               means,
+               x = 1:length(vars))  
+  }))
+}))
+aframe <- tmp
+aframe$coef_var <- aframe$vars/aframe$means
+ggplot(aframe, aes(x=treat, y=coef_var, fill=treat)) +
+  facet_wrap(~ study) +
+  geom_boxplot()
+```
+
+```{python}
+am = adata[adata.obs['cell_type'] == 'AM']
+patients = list(am.obs['patient_id'].unique())
+cells = [am[am.obs['patient_id'] == patient].obs_names for patient in patients]
+cols = []
+for patient in list(patients):
+    for x in np.arange(0, 3):
+        cols.append(patient + '_' + str(x))
+        
+means.columns = cols
+```
+
+```{r}
+means <- py$means
+means <- means[which(rowSums(means) > 0),]
+means <- means[which(apply(means, 1, function(x) sum(x > 0)) >= 3),]
+patient <- colnames(means)
+patient <- unlist(lapply(patient, function(x) strsplit(x, '_', fixed = T)[[1]][1]))
+pvals <- t(apply(means, 1, function(x){
+  coefficients(summary(lm(x ~ patient)))[-1, 4]
+}))
+unique_genes <- lapply(1:ncol(pvals), function(x){
+ ok1 <- which(apply(pvals[, -x], 1, function(y) sum(y > 0.05)) == ncol(pvals) - 1)
+ ok1 <- rownames(pvals)[ok1]
+ names(head(sort(pvals[ok1, x]), 10))
+})
+tmp <- means[unlist(unique_genes), ]
+pheatmap(tmp, scale = 'row', cluster_rows = F, cluster_cols = F, breaks = seq(-2, 2, length = 101))
