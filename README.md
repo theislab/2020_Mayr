@@ -6,5 +6,5 @@ Repo for the preprint at medRxiv  accompanying  Mayr et al. _"Integrated single 
 Download all data from [here](https://drive.google.com/uc?export=download&id=13vf6Fcy6cCJUuGvbnj5sQDhayLRq7op1) and subsequently uncompress the files.  
 The two anndata objects have following layers of information
 - munich_dataset.5had:  
-  raw counts in .layers["counts"], normalized and log-transformed counts in .raw.X and scaled / corrected layer in .X
+  raw counts in .layers["counts"], normalized/log-transformed counts in .raw.X and scaled/corrected counts in .X
 - integrated_human_dataset.h5ad: contains raw counts of all integrated data sets in .X
